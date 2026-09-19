@@ -7,6 +7,15 @@
 [![codecov](https://codecov.io/gh/csrc-sdsu/mole/branch/main/graph/badge.svg)](https://codecov.io/gh/csrc-sdsu/mole)
 [![Documentation](https://readthedocs.org/projects/mole-docs/badge/?version=main)](https://mole-docs.readthedocs.io/en/main/)
 
+[!IMPORTANT]
+**Experimental and unofficial prototype.** This repository contains a Python
+interface for MOLE built with pybind11. It exposes the existing MOLE C++
+implementation to Python and does not replace the official MOLE project.
+
+Official MOLE repository:
+https://github.com/csrc-sdsu/mole
+
+
 ## Description
 
 MOLE is a high-quality (C++, Octave, and Julia) library that implements
