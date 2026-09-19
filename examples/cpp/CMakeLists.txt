@@ -38,6 +38,7 @@ set(EXAMPLE_SOURCES
   wave1d.cpp
   wave2d_case2.cpp
   wave2d.cpp
+  benchmark_large_2d.cpp
 )
 
 # Create executables for each source file

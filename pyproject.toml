@@ -1,0 +1,37 @@
+[build-system]
+requires = [
+    "scikit-build-core>=0.10",
+    "pybind11>=2.11"
+]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "mole-mimetic"
+version = "0.1.0"
+description = "Python interface for the MOLE mimetic operators library"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [
+    { name = "San Diego State University Research Foundation" }
+]
+dependencies = [
+    "numpy>=1.23",
+    "scipy>=1.9"
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=7"
+]
+
+[tool.scikit-build]
+wheel.packages = ["python/mole"]
+cmake.version = ">=3.15"
+cmake.build-type = "Release"
+cmake.args = [
+    "-DMOLE_BUILD_PYTHON=ON",
+    "-DMOLE_INSTALL_CPP_LIBRARY=OFF",
+    "-DBUILD_TESTING=OFF",
+    "-DMOLE_BUILD_EXAMPLES=OFF"
+]

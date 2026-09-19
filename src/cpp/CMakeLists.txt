@@ -14,11 +14,31 @@ add_library(mole_C++
   interpolFtoC.cpp
   interpolNtoC.cpp
 )
+set_target_properties(
+  mole_C++
+  PROPERTIES
+  POSITION_INDEPENDENT_CODE ON
+)
 target_include_directories(mole_C++ PUBLIC ${ARMADILLO_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS} ${OpenBLAS_INCLUDE_DIRS} ${SUPERLU_INCLUDE_DIR})
 target_link_libraries(mole_C++ PUBLIC ${LINK_LIBS})
 
 # Installation for mole library
-install(TARGETS mole_C++ DESTINATION lib)
+# Install the standalone C++ library and public headers when requested.
+if(MOLE_INSTALL_CPP_LIBRARY)
+    install(
+        TARGETS mole_C++
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin
+    )
+
+    install(
+        DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/"
+        DESTINATION include/mole
+        FILES_MATCHING
+        PATTERN "*.h"
+    )
+endif()
 
 
 

@@ -1,5 +1,28 @@
-cmake_minimum_required(VERSION 3.10)
+#cmake_minimum_required(VERSION 3.10)
+# Keep CMake 3.10 compatibility for existing C++ users.
+# Python packaging requires CMake 3.15 or newer through pyproject.toml.
+cmake_minimum_required(VERSION 3.15) 
 project(TopLevelProject VERSION 1.0 LANGUAGES CXX)
+
+include(CTest)
+
+option(
+    MOLE_BUILD_PYTHON
+    "Build the MOLE Python interface"
+    OFF
+)
+
+option(
+    MOLE_INSTALL_CPP_LIBRARY
+    "Install the MOLE C++ library and headers"
+    ON
+)
+
+option(
+    MOLE_BUILD_EXAMPLES
+    "Build the MOLE C++ examples"
+    ON
+)
 
 
 set(CMAKE_CXX_STANDARD 14)
@@ -103,8 +126,17 @@ execute_process(COMMAND ${CMAKE_COMMAND} ..
     -DCMAKE_C_FLAGS="-fPIC"
     -DCMAKE_CXX_FLAGS="-fPIC"
     WORKING_DIRECTORY ${SUPERLU_BUILD_DIR})
-execute_process(COMMAND make -j4 WORKING_DIRECTORY ${SUPERLU_BUILD_DIR})
-execute_process(COMMAND make install WORKING_DIRECTORY ${SUPERLU_BUILD_DIR})
+execute_process(
+    COMMAND
+        ${CMAKE_COMMAND} --build "${SUPERLU_BUILD_DIR}" --parallel 4
+    COMMAND_ERROR_IS_FATAL ANY
+)
+
+execute_process(
+    COMMAND
+        ${CMAKE_COMMAND} --install "${SUPERLU_BUILD_DIR}"
+    COMMAND_ERROR_IS_FATAL ANY
+)
 
 # Armadillo configuration
 set(ARMADILLO_TARBALL_URL "https://sourceforge.net/projects/arma/files/armadillo-${ARMADILLO_VERSION}.tar.xz")
@@ -118,8 +150,17 @@ execute_process(COMMAND ${CMAKE_COMMAND}
     -DSuperLU_LIBRARY=${SUPERLU_INSTALL_DIR}/lib/libsuperlu.a
     -DCMAKE_INSTALL_PREFIX=${ARMADILLO_INSTALL_DIR} .
     WORKING_DIRECTORY ${ARMADILLO_BUILD_DIR})
-execute_process(COMMAND make -j4 WORKING_DIRECTORY ${ARMADILLO_BUILD_DIR})
-execute_process(COMMAND make install WORKING_DIRECTORY ${ARMADILLO_BUILD_DIR})
+execute_process(
+    COMMAND
+        ${CMAKE_COMMAND} --build "${ARMADILLO_BUILD_DIR}" --parallel 4
+    COMMAND_ERROR_IS_FATAL ANY
+)
+
+execute_process(
+    COMMAND
+        ${CMAKE_COMMAND} --install "${ARMADILLO_BUILD_DIR}"
+    COMMAND_ERROR_IS_FATAL ANY
+)
 
 # Update paths for Armadillo and SuperLU
 include_directories(${SUPERLU_INSTALL_DIR}/include ${ARMADILLO_INSTALL_DIR}/include)
@@ -147,12 +188,33 @@ set(LINK_LIBS ${ARMADILLO_LIBRARIES}
               ${LAPACK_LIBRARY})
 
 # Add subdirectories
+# Core C++ library
 add_subdirectory(src/cpp)
-add_subdirectory(tests/cpp)
-add_subdirectory(tests/matlab_octave)
-add_subdirectory(examples/cpp)
 
-# Custom target to build everything
-add_custom_target(all_build DEPENDS mole_C++ tests_C++ examples_C++ tests_matlab_octave)
+# Optional Python interface
+if(MOLE_BUILD_PYTHON)
+    add_subdirectory(python)
+endif()
 
+# Optional tests
+if(BUILD_TESTING)
+    add_subdirectory(tests/cpp)
 
+    if(MOLE_BUILD_PYTHON)
+        add_subdirectory(tests/python)
+    endif()
+
+    find_program(MATLAB_EXECUTABLE NAMES matlab)
+
+    if(MATLAB_EXECUTABLE)
+        message(STATUS "MATLAB found: ${MATLAB_EXECUTABLE}")
+        add_subdirectory(tests/matlab_octave)
+    else()
+        message(STATUS "MATLAB not found; skipping MATLAB/Octave tests.")
+    endif()
+endif()
+
+# Optional C++ examples
+if(MOLE_BUILD_EXAMPLES)
+    add_subdirectory(examples/cpp)
+endif()
